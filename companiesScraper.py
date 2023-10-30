@@ -2,20 +2,24 @@ import pandas as pd
 import requests
 import json
 import time
+from tqdm import tqdm
+
 
 class Companies():
     
-    def __init__(self,tickers=None,output_format="df",**kargs):
+    def __init__(self,tickers=None,key=None,**kargs):
         self.tickers = tickers
         self.data = None
-        self.screner_data = kargs
-        self.output_format = output_format
+        self.screner_data = kargs   
+        self.error_companies = []
+        self.key = key
         self.URL = f'https://stockrow.com/api/companies/'
         _requests_indicators = requests.get("https://stockrow.com/api/indicators.json").text
-        self.indicators = json.loads(_requests_indicators)   
+        self.indicators = pd.DataFrame(json.loads(_requests_indicators))
+   
         if self.tickers==None:
             #if tickers have not been set manually, call the screener
-            self._companies_screener()        
+            self._companies_screener()  
         pass
     
     def _companies_screener(self):
@@ -24,12 +28,13 @@ class Companies():
         data_json = json.loads(api_request.text)
         self.tickers = [company["symbol"] for company in data_json]
         
-    def get_data(self,financial,period="A"):
+    def get_data(self,financial,output_path=None,period="A"):
             fin = []    
             financial_to_download = self._process_financial_input(financial)
 
             if type(self.tickers) == list:
-                for ticker in self.tickers:
+                for ticker in tqdm(self.tickers):
+                    print(f'DOWNLOADING {financial_to_download}')
                     income_url = self.URL+f'{ticker}/financials.json?ticker={ticker}&dimension={period}&section={financial_to_download}'
                     #get the data
                     api_requests = requests.get(income_url)                
@@ -39,14 +44,20 @@ class Companies():
                         data = json.loads(api_requests.text)
                         data = pd.DataFrame(data)
                         # preprocess the response of the api for posterior convinience
-                        data = self.pipe(data,ticker,financial)
-                        #add the df to a list of dfs
-                        fin.append(data)
+                        try:
+                            data = self.pipe(data,ticker,financial)
+                            #add the df to a list of dfs
+                            fin.append(data)
+                        except:
+                            self.error_companies.append(ticker)  
+                            continue
+                            
                         time.sleep(0.3)
-                    else: print(f'Error downloading income for {ticker}',api_requests.status_code)     
-          
-
-            return pd.concat([d for d in fin])
+                    else: self.error_companies.append(ticker)    
+            data = pd.concat([d for d in fin])
+            if output_path:
+                self.save_as_csv(data,output_path)
+            return data
         
     def _process_financial_input(self,financial):
         #Depending on the financial stament the user want, modify the string to adapt the url
@@ -59,6 +70,10 @@ class Companies():
                 scale = False
             else: financial_to_download = "Cash+Flow" 
             return financial_to_download
+    
+    def save_as_csv(self,df,name):
+        df.to_csv(name)
+        
    
     def _preprocess_data(self,data):
         df = data.T.copy()
@@ -67,7 +82,6 @@ class Companies():
         return df
         
     def _merge_ids(self,data,indicators):
-        indicators = pd.DataFrame(indicators)
         return data.merge(indicators[["id","name"]],on="id").drop(["id"],axis=1)      
     
     def _preprocess_dataFormat(self,df,ticker,financial):
