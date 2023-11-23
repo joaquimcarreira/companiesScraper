@@ -1,0 +1,4 @@
+[ZoneTransfer]
+ZoneId=3
+ReferrerUrl=https://stockrow.com/IBM/financials/income/quarterly
+HostUrl=https://stockrow.com/api/companies/IBM/financials.xlsx?dimension=Q&section=Income%20Statement&sort=desc
