@@ -5,20 +5,20 @@
 
 ### In turn this is part of a larger Fundamental Business Analysis project.
 
-### Los datos se obtienen ejecutando el archivo "data_getter.py" con alguna de las siguientes opciones:
+### The data is obtained by running the "data_getter.py" file with one of the following options:
 
-  -h, --help            show this help message and exit
+  -h, --help                         show this help message and exit
   
-  -s SECTOR, --sector SECTOR
-                        Sector of companies
-  -i INDUSTRY, --industry INDUSTRY
-                        Industry of companies
-  --capmorethan CAPMORETHAN
-                        Capitalization higher than
-  --caplessthan CAPLESSTHAN
-                        Capitalization lower than
-  -t [TICKERS ...], --tickers [TICKERS ...]
-                        List of tickers
+  -s SECTOR, --sector SECTOR         Sector of companies
+  
+  -i INDUSTRY, --industry INDUSTR    Industry of companies
+                        
+  --capmorethan CAPMORETHAN          Capitalization higher than
+                        
+  --caplessthan CAPLESSTHAN          Capitalization lower than
+                        
+  -t [TICKERS ...], --tickers [TICKERS ...] List of tickers
+                        
   -f {cash_flow,income,balance,ratios,all}, --finance {cash_flow,income,balance,ratios,all}
   
   -k KEY, --key KEY     Free key of 'https://site.financialmodelingprep.com/.'
